@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeaveOS · HR Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f2;
+  --bg2: #edeae5;
+  --white: #ffffff;
+  --ink: #1a1714;
+  --ink2: #4a453f;
+  --ink3: #8a847c;
+  --border: #e2ddd8;
+  --sage: #4a7c59;
+  --sage-light: #e8f0eb;
+  --sage-mid: #c5d9cb;
+  --amber: #c97b2e;
+  --amber-light: #fdf0e0;
+  --rose: #c0404a;
+  --rose-light: #fce8ea;
+  --sky: #2d6fa3;
+  --sky-light: #e3eef7;
+  --purple: #6b4fa3;
+  --purple-light: #ede8f7;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.1), 0 12px 32px rgba(0,0,0,0.06);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── LAYOUT ── */
+.app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 240px;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo-mark {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 18px; font-weight: 800;
+  color: #fff; letter-spacing: -0.5px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--sage);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.logo-sub { font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 400; letter-spacing: 2px; margin-top: 2px; }
+
+.sidebar-nav { padding: 16px 12px; flex: 1; }
+.nav-section-label {
+  font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.25);
+  padding: 0 12px; margin: 16px 0 6px;
+  font-weight: 600;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-size: 13.5px; font-weight: 500;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+.nav-item.active { background: var(--sage); color: #fff; }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--amber);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sidebar-user {
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), var(--sky));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.user-role { font-size: 11px; color: rgba(255,255,255,0.3); }
+.role-switch {
+  margin-left: auto;
+  background: rgba(255,255,255,0.08);
+  border: none; color: rgba(255,255,255,0.5);
+  padding: 5px 8px; border-radius: 6px;
+  cursor: pointer; font-size: 11px;
+  transition: all 0.15s;
+}
+.role-switch:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+.page-date { font-size: 12px; color: var(--ink3); font-family: 'JetBrains Mono', monospace; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--sage);
+  color: #fff;
+  border: none; border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+.topbar-btn:hover { background: #3d6b4a; transform: translateY(-1px); }
+.notif-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; position: relative;
+  transition: all 0.15s;
+}
+.notif-btn:hover { background: var(--bg2); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--rose);
+  border: 1.5px solid var(--white);
+}
+
+/* ── CONTENT ── */
+.content { padding: 32px; flex: 1; }
+
+/* ── TABS ── */
+.view-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg2);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 28px;
+  width: fit-content;
+}
+.view-tab {
+  padding: 8px 20px;
+  border-radius: 7px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  color: var(--ink3);
+  transition: all 0.15s;
+  border: none; background: none;
+  font-family: 'Outfit', sans-serif;
+}
+.view-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.view-tab:hover:not(.active) { color: var(--ink2); }
+
+/* ── VIEWS ── */
+.view { display: none; animation: fadeIn 0.2s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+/* ── STAT CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+@media(max-width:900px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.stat-card.sage::after { background: var(--sage); }
+.stat-card.amber::after { background: var(--amber); }
+.stat-card.rose::after { background: var(--rose); }
+.stat-card.sky::after { background: var(--sky); }
+.stat-card:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-2px); }
+.stat-label { font-size: 11px; color: var(--ink3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+.stat-value { font-size: 32px; font-weight: 800; color: var(--ink); line-height: 1; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+.stat-sub { font-size: 12px; color: var(--ink3); }
+.stat-icon { position: absolute; top: 18px; right: 18px; font-size: 22px; opacity: 0.15; }
+
+/* ── GRID ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+@media(max-width: 800px) { .grid-2, .grid-3-1 { grid-template-columns: 1fr; } }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+.card-header {
+  padding: 18px 22px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.card-action {
+  font-size: 12px; color: var(--sage); font-weight: 600;
+  cursor: pointer; text-decoration: none;
+}
+.card-body { padding: 0 22px 20px; }
+
+/* ── LEAVE BAR ── */
+.leave-type-row { margin-bottom: 14px; }
+.leave-type-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.leave-type-name { font-size: 13px; font-weight: 600; }
+.leave-type-count { font-size: 12px; color: var(--ink3); font-family: 'JetBrains Mono', monospace; }
+.leave-bar-bg { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; }
+.leave-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+/* ── CALENDAR ── */
+.mini-cal { padding: 0 22px 20px; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-month { font-size: 14px; font-weight: 700; }
+.cal-nav { background: none; border: 1px solid var(--border); border-radius: 6px; width: 26px; height: 26px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+.cal-nav:hover { background: var(--bg2); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-dow { text-align: center; font-size: 10px; font-weight: 600; color: var(--ink3); padding: 4px 0; }
+.cal-day {
+  text-align: center; font-size: 12px; font-weight: 500;
+  padding: 6px 2px; border-radius: 6px; cursor: pointer;
+  transition: all 0.15s; position: relative;
+}
+.cal-day:hover { background: var(--bg2); }
+.cal-day.today { background: var(--ink); color: #fff; font-weight: 700; }
+.cal-day.leave { background: var(--sage-light); color: var(--sage); font-weight: 700; }
+.cal-day.pending { background: var(--amber-light); color: var(--amber); }
+.cal-day.empty { opacity: 0; pointer-events: none; }
+
+/* ── PENDING LIST ── */
+.pending-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.pending-item:last-child { border-bottom: none; }
+.pending-item:hover { background: var(--bg); }
+.pending-avatar {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.pending-info { flex: 1; min-width: 0; }
+.pending-name { font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.pending-detail { font-size: 12px; color: var(--ink3); }
+.pending-days {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--amber); margin-right: 12px;
+}
+.action-btns { display: flex; gap: 6px; }
+.btn-approve {
+  background: var(--sage-light); color: var(--sage);
+  border: 1px solid var(--sage-mid); border-radius: 7px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+.btn-approve:hover { background: var(--sage); color: #fff; }
+.btn-reject {
+  background: var(--rose-light); color: var(--rose);
+  border: 1px solid #f0c4c7; border-radius: 7px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+.btn-reject:hover { background: var(--rose); color: #fff; }
+
+/* ── STATUS BADGE ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+.badge-approved { background: var(--sage-light); color: var(--sage); }
+.badge-pending { background: var(--amber-light); color: var(--amber); }
+.badge-rejected { background: var(--rose-light); color: var(--rose); }
+
+/* ── LEAVE TABLE ── */
+.leave-table { width: 100%; border-collapse: collapse; }
+.leave-table th {
+  text-align: left; padding: 10px 22px;
+  font-size: 11px; font-weight: 700; color: var(--ink3);
+  letter-spacing: 1px; text-transform: uppercase;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.leave-table td {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.leave-table tr:last-child td { border-bottom: none; }
+.leave-table tr:hover td { background: var(--bg); }
+.emp-cell { display: flex; align-items: center; gap: 10px; }
+.emp-mini-avatar {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+
+/* ── EMPLOYEE OVERVIEW ── */
+.emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; padding: 0 22px 22px; }
+.emp-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s; cursor: pointer;
+}
+.emp-card:hover { border-color: var(--sage-mid); box-shadow: var(--card-shadow); transform: translateY(-2px); }
+.emp-card-avatar {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff;
+  margin-bottom: 10px;
+}
+.emp-card-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.emp-card-dept { font-size: 11px; color: var(--ink3); margin-bottom: 12px; }
+.emp-leave-mini { display: flex; flex-direction: column; gap: 6px; }
+.emp-leave-mini-row { display: flex; justify-content: space-between; font-size: 11px; }
+.emp-leave-mini-label { color: var(--ink3); }
+.emp-leave-mini-val { font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+/* ── MONTH CHART ── */
+.chart-wrap { padding: 0 22px 22px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bar-stack { width: 100%; border-radius: 5px 5px 0 0; transition: height 0.4s ease; }
+.bar-label { font-size: 10px; color: var(--ink3); font-family: 'JetBrains Mono', monospace; }
+.chart-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ── MY LEAVE (Employee View) ── */
+.my-balance-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; padding: 0 22px 20px; }
+.balance-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.balance-type { font-size: 11px; font-weight: 600; color: var(--ink3); margin-bottom: 6px; letter-spacing: 0.5px; }
+.balance-num { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.balance-total { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+/* ── APPLY FORM ── */
+.apply-form { padding: 0 22px 22px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--ink2); }
+.form-select, .form-input {
+  border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  font-size: 13px; color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  outline: none; transition: border-color 0.15s;
+  appearance: none;
+}
+.form-select:focus, .form-input:focus { border-color: var(--sage); background: var(--white); }
+.form-textarea {
+  border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  font-size: 13px; color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg); resize: none; height: 70px;
+  outline: none; transition: border-color 0.15s; width: 100%;
+  margin-bottom: 12px;
+}
+.form-textarea:focus { border-color: var(--sage); background: var(--white); }
+.submit-btn {
+  background: var(--sage); color: #fff;
+  border: none; border-radius: 9px;
+  padding: 11px 24px; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Outfit', sans-serif;
+  transition: all 0.15s; width: 100%;
+}
+.submit-btn:hover { background: #3d6b4a; transform: translateY(-1px); }
+
+/* ── SETTINGS ── */
+.settings-section { padding: 0 22px 22px; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 14px; font-weight: 600; }
+.settings-desc { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+.toggle {
+  width: 42px; height: 24px; border-radius: 12px;
+  background: var(--sage); position: relative; cursor: pointer;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.off { background: var(--border); }
+.toggle.off::after { transform: translateX(0); }
+.toggle.on::after { transform: translateX(18px); }
+
+/* ── APPROVE CHIPS ── */
+.approver-chain { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.approver-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 12px; font-weight: 600;
+}
+.approver-chip .remove { cursor: pointer; color: var(--ink3); font-size: 14px; margin-left: 2px; }
+.approver-chip .remove:hover { color: var(--rose); }
+.arrow-chip { color: var(--ink3); font-size: 14px; }
+.add-approver {
+  border: 1.5px dashed var(--border); border-radius: 20px;
+  padding: 5px 12px; font-size: 12px; font-weight: 600;
+  color: var(--ink3); cursor: pointer; background: none;
+  font-family: 'Outfit', sans-serif; transition: all 0.15s;
+}
+.add-approver:hover { border-color: var(--sage); color: var(--sage); }
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 16px;
+  z-index: 200;
+}
+.mobile-nav-items { display: flex; justify-content: space-around; }
+.mobile-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600; color: var(--ink3); cursor: pointer;
+  padding: 6px 12px; border-radius: 10px; transition: color 0.15s;
+}
+.mobile-nav-item.active { color: var(--sage); }
+.mobile-nav-icon { font-size: 20px; }
+
+@media(max-width: 640px) {
+  .sidebar { transform: translateX(-100%); }
+  .main { margin-left: 0; }
+  .mobile-nav { display: block; }
+  .content { padding: 20px 16px 80px; }
+  .stats-row { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .grid-2, .grid-3-1 { grid-template-columns: 1fr; }
+  .topbar { padding: 0 16px; }
+  .form-row { grid-template-columns: 1fr; }
+  .my-balance-grid { grid-template-columns: repeat(3,1fr); }
+}
+
+/* ── WA TOAST ── */
+.wa-toast {
+  position: fixed; bottom: 80px; right: 24px;
+  background: #25d366; color: #fff;
+  border-radius: 12px; padding: 12px 18px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+  z-index: 999;
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.wa-toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--ink3); }
+.empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
+.empty-text { font-size: 14px; }
+
+/* ── PRORATE CARD ── */
+.prorate-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+}
+.prorate-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+.prorate-label { font-size: 13px; color: var(--ink2); }
+.prorate-value { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--sage); }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🌿</div>
+      LeaveOS
+    </div>
+    <div class="logo-sub">HR MANAGEMENT</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">OVERVIEW</div>
+    <div class="nav-item active" onclick="switchNav(this,'dashboard')">
+      <span class="nav-icon">⊞</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="switchNav(this,'approvals')">
+      <span class="nav-icon">✓</span> Approvals
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-section-label">MANAGE</div>
+    <div class="nav-item" onclick="switchNav(this,'myleave')">
+      <span class="nav-icon">📅</span> My Leave
+    </div>
+    <div class="nav-item" onclick="switchNav(this,'team')">
+      <span class="nav-icon">👥</span> Team
+    </div>
+    <div class="nav-item" onclick="switchNav(this,'reports')">
+      <span class="nav-icon">📊</span> Reports
+    </div>
+    <div class="nav-section-label">ADMIN</div>
+    <div class="nav-item" onclick="switchNav(this,'settings')">
+      <span class="nav-icon">⚙</span> Settings
+    </div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar">DL</div>
+    <div>
+      <div class="user-name">David Lim</div>
+      <div class="user-role">HR Manager</div>
+    </div>
+    <button class="role-switch" onclick="cycleRole()">↕</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-date">Mar 2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="showApplyModal()">＋ Apply Leave</button>
+      <div class="notif-btn" onclick="showWAToast()">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ROLE INDICATOR -->
+    <div id="roleIndicator" style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding:10px 16px;background:var(--sage-light);border:1px solid var(--sage-mid);border-radius:10px;font-size:13px;font-weight:600;color:var(--sage);">
+      <span>👔</span>
+      <span id="roleText">Viewing as: HR Manager</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--ink3);font-weight:400">Click ↕ to switch role</span>
+    </div>
+
+    <!-- ═══ DASHBOARD VIEW ═══ -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-row">
+        <div class="stat-card sage">
+          <div class="stat-label">On Leave Today</div>
+          <div class="stat-value">2</div>
+          <div class="stat-sub">Sarah, James</div>
+          <div class="stat-icon">🏖</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Pending Approval</div>
+          <div class="stat-value">3</div>
+          <div class="stat-sub">Awaiting action</div>
+          <div class="stat-icon">⏳</div>
+        </div>
+        <div class="stat-card sky">
+          <div class="stat-label">Total Staff</div>
+          <div class="stat-value">18</div>
+          <div class="stat-sub">16 active today</div>
+          <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-card rose">
+          <div class="stat-label">Leaves This Month</div>
+          <div class="stat-value">11</div>
+          <div class="stat-sub">↑ 2 from last month</div>
+          <div class="stat-icon">📋</div>
+        </div>
+      </div>
+
+      <div class="grid-3-1" style="margin-bottom:20px">
+        <!-- Pending -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Approvals</div>
+            <a class="card-action" onclick="switchNav(document.querySelector('.nav-item:nth-child(4)'),'approvals')">View all →</a>
+          </div>
+          <div class="pending-item">
+            <div class="pending-avatar" style="background:linear-gradient(135deg,#4a7c59,#2d6fa3)">SL</div>
+            <div class="pending-info">
+              <div class="pending-name">Sarah Lim</div>
+              <div class="pending-detail">Annual Leave · Dec 20–21</div>
+            </div>
+            <div class="pending-days">2d</div>
+            <div class="action-btns">
+              <button class="btn-approve" onclick="approveLeave(this)">✓</button>
+              <button class="btn-reject" onclick="rejectLeave(this)">✗</button>
+            </div>
+          </div>
+          <div class="pending-item">
+            <div class="pending-avatar" style="background:linear-gradient(135deg,#c97b2e,#c0404a)">JT</div>
+            <div class="pending-info">
+              <div class="pending-name">James Tan</div>
+              <div class="pending-detail">Medical Leave · Dec 23</div>
+            </div>
+            <div class="pending-days">1d</div>
+            <div class="action-btns">
+              <button class="btn-approve" onclick="approveLeave(this)">✓</button>
+              <button class="btn-reject" onclick="rejectLeave(this)">✗</button>
+            </div>
+          </div>
+          <div class="pending-item">
+            <div class="pending-avatar" style="background:linear-gradient(135deg,#6b4fa3,#2d6fa3)">AN</div>
+            <div class="pending-info">
+              <div class="pending-name">Amy Ng</div>
+              <div class="pending-detail">Annual Leave · Dec 26–27</div>
+            </div>
+            <div class="pending-days">2d</div>
+            <div class="action-btns">
+              <button class="btn-approve" onclick="approveLeave(this)">✓</button>
+              <button class="btn-reject" onclick="rejectLeave(this)">✗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Cal -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">December</div></div>
+          <div class="mini-cal">
+            <div class="cal-grid">
+              <div class="cal-dow">M</div><div class="cal-dow">T</div><div class="cal-dow">W</div>
+              <div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div><div class="cal-dow">S</div>
+              <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+              <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day">1</div><div class="cal-day">2</div>
+              <div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+              <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div>
+              <div class="cal-day today">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+              <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div>
+              <div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+              <div class="cal-day leave">20</div><div class="cal-day leave">21</div><div class="cal-day">22</div><div class="cal-day">23</div>
+              <div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day leave">26</div>
+              <div class="cal-day leave">27</div><div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div>
+              <div class="cal-day">31</div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:10px;height:10px;border-radius:3px;background:var(--sage-light);border:1px solid var(--sage-mid)"></div>Approved</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:10px;height:10px;border-radius:3px;background:var(--amber-light);border:1px solid #f0d5a8"></div>Pending</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave Distribution -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Leave Distribution — This Month</div></div>
+        <div class="chart-wrap">
+          <div class="bar-chart">
+            <div class="bar-group">
+              <div class="bar-stack" style="height:60px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Jan</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:40px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Feb</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:75px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Mar</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:30px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Apr</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:50px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">May</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:45px;background:var(--sky);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Jun</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:80px;background:var(--amber);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Jul</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:55px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Aug</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:35px;background:var(--sky);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Sep</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:60px;background:var(--sage);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Oct</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:45px;background:var(--amber);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Nov</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-stack" style="height:90px;background:var(--rose);border-radius:6px 6px 0 0"></div>
+              <div class="bar-label">Dec</div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--sage)"></div>Annual</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--sky)"></div>Medical</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Emergency</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Unpaid</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ APPROVALS VIEW ═══ -->
+    <div class="view" id="view-approvals">
+      <div class="view-tabs">
+        <button class="view-tab active">Pending (3)</button>
+        <button class="view-tab" onclick="switchTab(this)">Approved</button>
+        <button class="view-tab" onclick="switchTab(this)">Rejected</button>
+      </div>
+      <div class="card">
+        <table class="leave-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Leave Type</th>
+              <th>Duration</th>
+              <th>Days</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#4a7c59,#2d6fa3)">SL</div><div><div style="font-weight:600">Sarah Lim</div><div style="font-size:11px;color:var(--ink3)">Marketing</div></div></div></td>
+              <td>Annual Leave</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:12px">Dec 20–21</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700">2</td>
+              <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--sage);font-weight:700">8 left</span></td>
+              <td><span class="badge badge-pending">● Pending</span></td>
+              <td><div class="action-btns"><button class="btn-approve" onclick="approveLeave(this)">✓ Approve</button><button class="btn-reject" onclick="rejectLeave(this)">✗</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#c97b2e,#c0404a)">JT</div><div><div style="font-weight:600">James Tan</div><div style="font-size:11px;color:var(--ink3)">Operations</div></div></div></td>
+              <td>Medical Leave</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:12px">Dec 23</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700">1</td>
+              <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--sky);font-weight:700">14 left</span></td>
+              <td><span class="badge badge-pending">● Pending</span></td>
+              <td><div class="action-btns"><button class="btn-approve" onclick="approveLeave(this)">✓ Approve</button><button class="btn-reject" onclick="rejectLeave(this)">✗</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#6b4fa3,#2d6fa3)">AN</div><div><div style="font-weight:600">Amy Ng</div><div style="font-size:11px;color:var(--ink3)">Finance</div></div></div></td>
+              <td>Annual Leave</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:12px">Dec 26–27</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700">2</td>
+              <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);font-weight:700">3 left</span></td>
+              <td><span class="badge badge-pending">● Pending</span></td>
+              <td><div class="action-btns"><button class="btn-approve" onclick="approveLeave(this)">✓ Approve</button><button class="btn-reject" onclick="rejectLeave(this)">✗</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ MY LEAVE VIEW (Employee) ═══ -->
+    <div class="view" id="view-myleave">
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">My Leave Balance</div></div>
+          <div class="my-balance-grid">
+            <div class="balance-item">
+              <div class="balance-type">ANNUAL</div>
+              <div class="balance-num" style="color:var(--sage)">8</div>
+              <div class="balance-total">of 16 days</div>
+            </div>
+            <div class="balance-item">
+              <div class="balance-type">MEDICAL</div>
+              <div class="balance-num" style="color:var(--sky)">14</div>
+              <div class="balance-total">of 14 days</div>
+            </div>
+            <div class="balance-item">
+              <div class="balance-type">EMERGENCY</div>
+              <div class="balance-num" style="color:var(--amber)">3</div>
+              <div class="balance-total">of 3 days</div>
+            </div>
+          </div>
+          <div style="padding:0 22px 16px">
+            <div class="leave-type-row">
+              <div class="leave-type-top">
+                <span class="leave-type-name">Annual Leave</span>
+                <span class="leave-type-count">8 / 16</span>
+              </div>
+              <div class="leave-bar-bg"><div class="leave-bar-fill" style="width:50%;background:var(--sage)"></div></div>
+            </div>
+            <div class="leave-type-row">
+              <div class="leave-type-top">
+                <span class="leave-type-name">Medical Leave</span>
+                <span class="leave-type-count">0 / 14</span>
+              </div>
+              <div class="leave-bar-bg"><div class="leave-bar-fill" style="width:100%;background:var(--sky)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Quick Apply</div></div>
+          <div class="apply-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label">Leave Type</label>
+                <select class="form-select">
+                  <option>Annual Leave</option>
+                  <option>Medical Leave</option>
+                  <option>Emergency Leave</option>
+                  <option>Unpaid Leave</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Start Date</label>
+                <input class="form-input" type="date" value="2025-12-20">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label">End Date</label>
+                <input class="form-input" type="date" value="2025-12-21">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Days</label>
+                <input class="form-input" type="text" value="2 working days" readonly style="background:var(--bg2);color:var(--sage);font-weight:700">
+              </div>
+            </div>
+            <textarea class="form-textarea" placeholder="Reason (optional)..."></textarea>
+            <button class="submit-btn" onclick="submitLeave()">Submit via WhatsApp ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">My Leave History</div></div>
+        <table class="leave-table">
+          <thead><tr><th>Type</th><th>Duration</th><th>Days</th><th>Reason</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Annual Leave</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">Nov 5–6</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700">2</td><td style="color:var(--ink3)">Family trip</td><td><span class="badge badge-approved">✓ Approved</span></td></tr>
+            <tr><td>Medical Leave</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">Oct 12</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700">1</td><td style="color:var(--ink3)">Fever</td><td><span class="badge badge-approved">✓ Approved</span></td></tr>
+            <tr><td>Annual Leave</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">Dec 20–21</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700">2</td><td style="color:var(--ink3)">Year-end break</td><td><span class="badge badge-pending">● Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TEAM VIEW ═══ -->
+    <div class="view" id="view-team">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">All Employees · Leave Balance</div><span style="font-size:12px;color:var(--ink3)">18 staff</span></div>
+        <div class="emp-grid">
+          <div class="emp-card">
+            <div class="emp-card-avatar" style="background:linear-gradient(135deg,#4a7c59,#2d6fa3)">SL</div>
+            <div class="emp-card-name">Sarah Lim</div>
+            <div class="emp-card-dept">Marketing</div>
+            <div class="emp-leave-mini">
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Annual</span><span class="emp-leave-mini-val" style="color:var(--sage)">8/16</span></div>
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Medical</span><span class="emp-leave-mini-val" style="color:var(--sky)">14/14</span></div>
+            </div>
+          </div>
+          <div class="emp-card">
+            <div class="emp-card-avatar" style="background:linear-gradient(135deg,#c97b2e,#c0404a)">JT</div>
+            <div class="emp-card-name">James Tan</div>
+            <div class="emp-card-dept">Operations</div>
+            <div class="emp-leave-mini">
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Annual</span><span class="emp-leave-mini-val" style="color:var(--sage)">12/16</span></div>
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Medical</span><span class="emp-leave-mini-val" style="color:var(--sky)">13/14</span></div>
+            </div>
+          </div>
+          <div class="emp-card">
+            <div class="emp-card-avatar" style="background:linear-gradient(135deg,#6b4fa3,#2d6fa3)">AN</div>
+            <div class="emp-card-name">Amy Ng</div>
+            <div class="emp-card-dept">Finance</div>
+            <div class="emp-leave-mini">
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Annual</span><span class="emp-leave-mini-val" style="color:var(--amber)">3/16</span></div>
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Medical</span><span class="emp-leave-mini-val" style="color:var(--sky)">14/14</span></div>
+            </div>
+          </div>
+          <div class="emp-card">
+            <div class="emp-card-avatar" style="background:linear-gradient(135deg,#2d6fa3,#6b4fa3)">RW</div>
+            <div class="emp-card-name">Ryan Wong</div>
+            <div class="emp-card-dept">Tech</div>
+            <div class="emp-leave-mini">
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Annual</span><span class="emp-leave-mini-val" style="color:var(--sage)">10/16</span></div>
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Medical</span><span class="emp-leave-mini-val" style="color:var(--sky)">12/14</span></div>
+            </div>
+          </div>
+          <div class="emp-card">
+            <div class="emp-card-avatar" style="background:linear-gradient(135deg,#c0404a,#c97b2e)">MH</div>
+            <div class="emp-card-name">Mei Hua</div>
+            <div class="emp-card-dept">Sales</div>
+            <div class="emp-leave-mini">
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Annual</span><span class="emp-leave-mini-val" style="color:var(--sage)">6/16</span></div>
+              <div class="emp-leave-mini-row"><span class="emp-leave-mini-label">Medical</span><span class="emp-leave-mini-val" style="color:var(--sky)">11/14</span></div>
+            </div>
+          </div>
+          <div class="emp-card" style="border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink3);cursor:pointer;min-height:130px" onclick="alert('Add employee form')">
+            <div style="text-align:center"><div style="font-size:24px;margin-bottom:6px">＋</div><div style="font-size:12px;font-weight:600">Add Employee</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REPORTS VIEW ═══ -->
+    <div class="view" id="view-reports">
+      <div class="stats-row" style="margin-bottom:20px">
+        <div class="stat-card sage"><div class="stat-label">Total Leave Days</div><div class="stat-value">87</div><div class="stat-sub">Year 2025</div></div>
+        <div class="stat-card sky"><div class="stat-label">Avg Per Employee</div><div class="stat-value">4.8</div><div class="stat-sub">days/month</div></div>
+        <div class="stat-card amber"><div class="stat-label">Pending Balance</div><div class="stat-value">34</div><div class="stat-sub">Carry forward risk</div></div>
+        <div class="stat-card rose"><div class="stat-label">MC Rate</div><div class="stat-value">12%</div><div class="stat-sub">vs 8% last year</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Monthly Leave Summary</div>
+          <a class="card-action" onclick="exportReport()">⬇ Export Excel</a>
+        </div>
+        <table class="leave-table">
+          <thead><tr><th>Employee</th><th>Dept</th><th>Annual Used</th><th>Annual Left</th><th>Medical Used</th><th>Join Date</th><th>Pro-rated</th></tr></thead>
+          <tbody>
+            <tr><td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#4a7c59,#2d6fa3)">SL</div>Sarah Lim</div></td><td>Marketing</td><td style="font-family:'JetBrains Mono',monospace">8</td><td style="font-family:'JetBrains Mono',monospace;color:var(--sage);font-weight:700">8</td><td style="font-family:'JetBrains Mono',monospace">0</td><td style="font-size:12px;color:var(--ink3)">Jan 2023</td><td><span class="badge badge-approved">Full Year</span></td></tr>
+            <tr><td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#c97b2e,#c0404a)">JT</div>James Tan</div></td><td>Operations</td><td style="font-family:'JetBrains Mono',monospace">4</td><td style="font-family:'JetBrains Mono',monospace;color:var(--sage);font-weight:700">12</td><td style="font-family:'JetBrains Mono',monospace">1</td><td style="font-size:12px;color:var(--ink3)">Mar 2024</td><td><span class="badge badge-pending">Pro-rated</span></td></tr>
+            <tr><td><div class="emp-cell"><div class="emp-mini-avatar" style="background:linear-gradient(135deg,#6b4fa3,#2d6fa3)">AN</div>Amy Ng</div></td><td>Finance</td><td style="font-family:'JetBrains Mono',monospace">13</td><td style="font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700">3</td><td style="font-family:'JetBrains Mono',monospace">0</td><td style="font-size:12px;color:var(--ink3)">Jul 2022</td><td><span class="badge badge-approved">Full Year</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS VIEW ═══ -->
+    <div class="view" id="view-settings">
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">Leave Entitlement</div></div>
+            <div class="settings-section">
+              <div class="settings-row">
+                <div><div class="settings-label">Annual Leave</div><div class="settings-desc">Default days per year</div></div>
+                <input class="form-input" style="width:70px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700" value="16">
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Medical Leave</div><div class="settings-desc">Including hospitalisation</div></div>
+                <input class="form-input" style="width:70px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700" value="14">
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Emergency Leave</div></div>
+                <input class="form-input" style="width:70px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700" value="3">
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Pro-rata Calculation</div><div class="settings-desc">Auto-calculate for mid-year joiners</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Calendar Day Calculation</div><div class="settings-desc">Count weekends as leave days</div></div>
+                <div class="toggle off" onclick="toggleSwitch(this)"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Carry Forward</div><div class="settings-desc">Allow unused leave to next year</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Pro-rata Preview</div></div>
+            <div style="padding:0 22px 20px">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:10px">Join date: <strong>Jul 1, 2025</strong> → 6 months remaining</div>
+              <div class="prorate-card">
+                <div class="prorate-row"><span class="prorate-label">Full Year Entitlement</span><span class="prorate-value">16 days</span></div>
+                <div class="prorate-row"><span class="prorate-label">Months Remaining</span><span class="prorate-value">6 / 12</span></div>
+                <div class="prorate-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:10px"><span class="prorate-label" style="font-weight:700">Pro-rated Entitlement</span><span class="prorate-value" style="font-size:18px">8 days</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">Approval Chain</div><a class="card-action">Edit</a></div>
+            <div style="padding:0 22px 22px">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:14px">Who approves leave requests, in order:</div>
+              <div class="approver-chain">
+                <div class="approver-chip">👤 Direct Manager <span class="remove">×</span></div>
+                <div class="arrow-chip">→</div>
+                <div class="approver-chip">👔 HR Manager <span class="remove">×</span></div>
+                <div class="arrow-chip">→</div>
+                <button class="add-approver">＋ Add Level</button>
+              </div>
+              <div style="margin-top:16px;font-size:12px;color:var(--ink3)">
+                <div style="margin-bottom:6px">⚡ <strong>Auto-approve rules:</strong></div>
+                <div style="padding:10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                  Annual Leave ≤ 2 days → Auto-approve if balance sufficient<br>
+                  Medical Leave → Always requires MC attachment
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">WhatsApp Integration</div></div>
+            <div class="settings-section">
+              <div class="settings-row">
+                <div><div class="settings-label">Employee Notifications</div><div class="settings-desc">Send approval status via WhatsApp</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Manager Alerts</div><div class="settings-desc">Notify manager of new requests</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">Monthly Report</div><div class="settings-desc">Auto-send to HR every 1st of month</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-label">OpenClaw Agent</div><div class="settings-desc">AI handles natural language requests</div></div>
+                <div class="toggle on" onclick="toggleSwitch(this)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+</div><!-- end app -->
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav">
+  <div class="mobile-nav-items">
+    <div class="mobile-nav-item active" onclick="switchNavMobile(this,'dashboard')"><div class="mobile-nav-icon">⊞</div>Home</div>
+    <div class="mobile-nav-item" onclick="switchNavMobile(this,'approvals')"><div class="mobile-nav-icon">✓</div>Approve</div>
+    <div class="mobile-nav-item" onclick="switchNavMobile(this,'myleave')"><div class="mobile-nav-icon">📅</div>My Leave</div>
+    <div class="mobile-nav-item" onclick="switchNavMobile(this,'team')"><div class="mobile-nav-icon">👥</div>Team</div>
+    <div class="mobile-nav-item" onclick="switchNavMobile(this,'settings')"><div class="mobile-nav-icon">⚙</div>Settings</div>
+  </div>
+</div>
+
+<!-- WA TOAST -->
+<div class="wa-toast" id="waToast">💬 WhatsApp notification sent!</div>
+
+<script>
+const roles = [
+  { name: 'David Lim', role: 'HR Manager', initials: 'DL', label: 'Viewing as: HR Manager (Full Access)' },
+  { name: 'Sarah Lim', role: 'Employee', initials: 'SL', label: 'Viewing as: Employee (My Leave Only)' },
+  { name: 'James Tan', role: 'Manager', initials: 'JT', label: 'Viewing as: Manager (Approve Team)' }
+];
+let currentRole = 0;
+
+function cycleRole() {
+  currentRole = (currentRole + 1) % roles.length;
+  const r = roles[currentRole];
+  document.querySelector('.user-name').textContent = r.name;
+  document.querySelector('.user-role').textContent = r.role;
+  document.querySelector('.user-avatar').textContent = r.initials;
+  document.getElementById('roleText').textContent = r.label;
+}
+
+function switchNav(el, viewId) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  showView(viewId);
+  const titles = { dashboard:'Dashboard', approvals:'Approvals', myleave:'My Leave', team:'Team', reports:'Reports', settings:'Settings' };
+  document.getElementById('pageTitle').textContent = titles[viewId] || viewId;
+}
+
+function switchNavMobile(el, viewId) {
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  showView(viewId);
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+}
+
+function switchTab(el) {
+  el.closest('.view-tabs').querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function approveLeave(btn) {
+  const row = btn.closest('tr') || btn.closest('.pending-item');
+  row.style.opacity = '0.4';
+  row.style.transition = 'opacity 0.3s';
+  showWAToast('✅ Approved & notified via WhatsApp');
+  setTimeout(() => row.remove(), 400);
+}
+
+function rejectLeave(btn) {
+  const row = btn.closest('tr') || btn.closest('.pending-item');
+  row.style.opacity = '0.4';
+  row.style.transition = 'opacity 0.3s';
+  showWAToast('❌ Rejected & notified via WhatsApp');
+  setTimeout(() => row.remove(), 400);
+}
+
+function submitLeave() {
+  showWAToast('📤 Applied! Pending manager approval');
+}
+
+function showApplyModal() { switchNav(document.querySelectorAll('.nav-item')[2], 'myleave'); }
+
+function showWAToast(msg) {
+  const t = document.getElementById('waToast');
+  t.textContent = msg || '💬 WhatsApp notification sent!';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+  el.classList.toggle('off');
+}
+
+function exportReport() { showWAToast('📊 Report sent to your WhatsApp!'); }
+</script>
+</body>
+</html>
